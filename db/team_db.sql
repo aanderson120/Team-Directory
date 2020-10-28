@@ -1,29 +1,34 @@
-drop database if exists team_db;
-create database team_db;
+DROP DATABASE IF EXISTS team_db;
 
-use team team_db; 
+CREATE DATABASE team_db;
 
-create table department (
-id integer unsigned auto_increment,
-name varchar(30) not null,
-primary key (id),
-unique (name)
+USE team_db;
+
+CREATE TABLE department(
+    id INT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(30) NOT NULL,
+    PRIMARY KEY (id)
 );
 
-create table role (
-id integer unsigned auto_increment,
-title varchar(30) not null,
-salaray integer not null,
-department_id integer unsigned not null,
-primary key (id),
-foreign key (department_id)
-references department(id)
-on delete casscade
+CREATE TABLE role(
+    id INT AUTO_INCREMENT NOT NULL,
+    title VARCHAR(30) NOT NULL,
+    salary DECIMAL NOT NULL,
+    department_id INT NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (department_id)
+    REFERENCES department(id)
+    ON DELETE CASCADE
 );
 
-create table employee (
-id integer unsigned auto_increament,
-first_name varchar (30) not null,
-last_name varchar (30) not null,
-role_id integer not null,
-manager_id integer not null 
+CREATE TABLE employee(
+    id INT AUTO_INCREMENT NOT NULL,
+    first_name VARCHAR(30) NOT NULL,
+    last_name VARCHAR(30) NOT NULL,
+    role_id INT NOT NULL,
+    manager_id INT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (role_id)
+    REFERENCES role(id)
+    ON DELETE CASCADE
+);
