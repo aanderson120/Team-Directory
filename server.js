@@ -1,6 +1,7 @@
 const util = require("util");
 const mysql = require("mysql");
 const { prompt } = require("inquirer");
+const inquirer = require("inquirer");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -108,7 +109,7 @@ async function askQuestions() {
 
       //----- view -----//
 async function viewDepartment() {
-  const department = connection.query(`SELECT name AS Departments FROM department`);
+  const department = await connection.query(`SELECT name AS Departments FROM department`);
    
   console.table(department);
 
@@ -134,46 +135,66 @@ async function viewEmployee() {
 
       //----- add -----//
 async function newDept () {
-  const deptNew = await prompt ([
+  inquirer.prompt ([
     {
       name: "name",
       message: "What is the name of the new department?"
     }
-  ]);
+  ]).then(function (answer) {
+    connection.query(`INSERT INTO department SET ?`,
+    {
+      name: answer.name
+    },
+    function(err) {
+      if (err) throw err;
+      console.log(answer.name);
+      askQuestions();
+    }
+    );
+  });
 
-  await connection.query(`INSERT INTO department SET ?`);
-  console.log(`${deptNew.name} added`);
-  askQuestions();
 }
  async function newRole() {
-   let allDepartments = await connection.query(`SELECT name AS Departments FROM department`);
-
-   const departmentChoice = allDepartments.map(({ id, name }) => ({
-     name: name,
-     value: id
-   }));
-
-   const roleNew = await prompt ([
-     {
-       name: "roleName",
-       message: "What is the name of the new role?"
-     },
-     {
-       name: "salary",
-       message: "What is the salary for this role?"
-     },
-     {
-       name: "deptRole",
-       message: "Which department is this role in?",
-       choice: departmentChoice
-     }
-   ]);
-
-   await connection.query(`SELECT title AS Roles FROM role`);
-   console.log(`${roleNew.name} added`);
-   askQuestions();
-
-   }
+  let departments = await allDepartments ();
+  let departChoice = departments.map (({ id, name }) => ({
+    name: name,
+    value: id
+  }));
+  
+     inquirer.prompt ([
+      {
+        name: "title",
+        message: "What is the name of the new role?"
+      },
+      {
+        name: "salary",
+        message: "What is the salary for this role?"
+      },
+      {
+        type: "rawlist",
+        name: "department_id",
+        message: "Which department is this role in?",
+        choices: departChoice
+      }
+     ]).then (function (answer) {
+      connection.query(`INSERT INTO role SET ? WHERE ?`, //unhandledpromiserejectionwarning
+      {
+        title: answer.title
+      },
+      {
+        salary: answer.salary
+      },
+      {
+        department_id: answer.department_id
+      },
+        function(err) {
+        if (err) throw err;
+        console.log(role.title);
+        askQuestions();
+      }
+      );
+    });
+}
 
   async function newEmpl() {
     let allRoles = await connection.query(`SELECT title AS Roles FROM role`);
@@ -223,9 +244,8 @@ async function newDept () {
 
           //----- delete -----//
 async function deleteDepartment () {
-  let allDepartments = await connection.query(`SELECT name AS Departments FROM department`);
-
-  const departChoice = allDepartments.map(({ id, name }) => ({
+  let departments = await allDepartments ();
+  let departChoice = departments.map (({ id, name }) => ({
     name: name,
     value: id
   }));
@@ -236,6 +256,7 @@ async function deleteDepartment () {
     message: "Which department would you like to delete?",
     choices: departChoice
   });
+  
   await connection.query(`DELETE FROM employee WHERE ?`)(departmenttId);
   console.log(`${departChoice.name} removed`);
   askQuestions();
@@ -283,6 +304,6 @@ async function deleteEmpl() {
   askQuestions();
 }
 
-function quit() {
-  process.exit();
-  }
+function allDepartments() {
+  return connection.query(`SELECT department.id, department.name, SUM(role.salary) AS utilized_budget FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.name;`);
+}

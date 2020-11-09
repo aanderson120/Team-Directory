@@ -23,12 +23,12 @@ values
 insert into employee
 	(first_name, last_name, role_id, manager_id)
 values
-    ('Amy', 'Sosa', 1, 9),
+    ('Amy', 'Sosa', 1, NULL),
     ('Sandra', 'Kaluiokalani ', 2, 1),
-    ('Mateo', 'Liwanag', 3, 9),
-    ('Cheyenne ', 'Thompson ', 4, 3),
-    ('Glenn ', 'Sturgis', 5, 9),
+    ('Mateo', 'Liwanag', 3, NULL),
+    ('Cheyenne ', 'Thompson ', 4, NULL),
+    ('Glenn ', 'Sturgis', 5, NULL),
     ('Jonah ', 'Simms', 6, 5),
-    ('Dina ', 'Fox', 7, 9),
+    ('Dina ', 'Fox', 7, NULL),
     ('Garrett ', 'McNeil', 8, 7);
 
